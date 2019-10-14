@@ -1,4 +1,6 @@
 #!/bin/bash
+# .../code_project
+# .../Documentos
 project_dir='/mnt/c/Users/ricar_xuzvwqa/Codigo/regression_classifier'
 docs='/mnt/c/Users/ricar_xuzvwqa/OneDrive/Documentos/Asignaturas/Primer Semestre - 2019-2020/Aprendizaje Computacional/Prácticas/Documentos'
 project_name="${project_dir##*/}"
