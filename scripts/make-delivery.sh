@@ -1,21 +1,20 @@
 #!/bin/bash
 # .../code_project
 # .../Documentos
-project_dir='/mnt/c/Users/ricar_xuzvwqa/Codigo/regression_classifier'
-docs='/mnt/c/Users/ricar_xuzvwqa/OneDrive/Documentos/Asignaturas/Primer Semestre - 2019-2020/Aprendizaje Computacional/Prácticas/Documentos'
+project_dir='/mnt/c/Users/ricar_xuzvwqa/Codigo/regression_classifier/'
+docs='/mnt/c/Users/ricar_xuzvwqa/OneDrive/Documentos/Asignaturas/Primer Semestre - 2019-2020/Aprendizaje Computacional/Prácticas/Documentos/'
+project_dir="${project_dir%/}"
+docs="${docs%/}"
 project_name="${project_dir##*/}"
-project_dir2="${project_dir%/*}"
 pushd . > /dev/null
+dir="$(pwd)"
 cd "${project_dir}"
-cd ..
-mkdir tmp
-cd tmp
-cp -r "${project_dir}" .
-popd > /dev/null 
-mv "${project_dir2}/tmp/${project_name}" .
-rm -d "${project_dir2}/tmp/"
-cd "${project_name}"
-rm -r .git/
+dir="${dir#${project_dir}}"
+dir="${dir#/}"
+dir="./${dir}/${project_name}/"
+git checkout-index -a --prefix "${dir}"
+popd > /dev/null
+cd "${project_name}" 
 if (("$project_name" == 'regression_classifier'))
 then
 	rm -r docs/dataset_web_files/
