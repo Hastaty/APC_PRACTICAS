@@ -6,6 +6,7 @@ from matplotlib import pyplot as plt
 from sklearn.metrics import mean_squared_error
 from IPython.display import display
 import seaborn as sb
+from sklearn.metrics import r2_score
 
 
 #Para comprobar el error cuadratico medio
@@ -17,7 +18,7 @@ def mean_squeared_error(y1, y2):
         mse += (y1[i] - y2[i])**2
     return mse / len(y1)
 
-def split_data(x, y, train_ratio=0.8):
+def split_data(x, y, train_ratio = 0.8):
     indices = np.arange(x.shape[0])
     np.random.shuffle(indices)
     n_train = int(np.floor(x.shape[0]*train_ratio))
@@ -28,6 +29,16 @@ def split_data(x, y, train_ratio=0.8):
     x_val = x[indices_val, :]
     y_val = y[indices_val]
     return x_train, y_train, x_val, y_val
+
+
+def standarize(M):
+    mean = M.mean(axis=0)
+    std = M.std(axis=0)
+    M = M - mean[None, :]
+    M = M / std[None, :]
+    return M
+
+
 
 #Leemos el fichero
 dataframe=pd.read_csv('../data/bike_' + \
@@ -72,12 +83,12 @@ better_frame['hum'] = better_frame['hum'] * 100.0
 better_frame['windspeed'] = better_frame['windspeed'] * 67.0
 
 
-
+better_frame = standarize(better_frame.values)
 
 
 
 #Y nos quedamos solo con los valores, sin las cabeceras
-data=better_frame.values
+data=better_frame
 
 #Averiguamos cual es el número de columna más alto
 columnas=data.shape[1]-1
@@ -107,6 +118,7 @@ for columna in range(0, columnas):
     fila_x=columna_x.reshape(-1, 1)
     modelo=LinearRegression()
     #Entrenamos el modelo pasandole
+    
     modelo=modelo.fit(fila_x, y_train)
 
     #En este punto el modelo está "entrenado"
@@ -115,17 +127,18 @@ for columna in range(0, columnas):
     #Ahora pedimos al modelo entrenado que haga una prediccion con los valores de prueba
     #que se recortaron con la función split_data. De nuevo el modelo
     #necesitará tomar los datos de x "traspuestos"
+    
     x_test_filas=x_test[:, columna].reshape(-1,1)
     #print("x_test_filas")
     #print(x_test_filas.shape)
     predicciones_y=modelo.predict(x_test_filas)
     #print("Predicciones para y")
     #print(predicciones_y)
-    
-    print(str(data_global.columns[columna]))
-    plt.figure() 
-    ax = plt.scatter(x_test_filas, y_test) 
-    plt.plot(x_test_filas, predicciones_y, 'r', linewidth=3)
+
+    #print(str(data_global.columns[columna]))
+    #plt.figure() 
+    #ax = plt.scatter(x_test_filas, y_test) 
+    #plt.plot(x_test_filas, predicciones_y, 'r', linewidth=3)
 
 
     
@@ -134,7 +147,12 @@ for columna in range(0, columnas):
     #print("Len y pred:"+str(len(predicciones_y)))
     #print(len(y_test))
     error_cuadratico_medio=mean_squeared_error(predicciones_y, y_test)
-    print("El error cuadratico para el atributo "+str(data_global.columns[columna]) +" es "+str(error_cuadratico_medio))
+    r2 = r2_score(y, predicciones_y)
+
+
+    
+    print(str(data_global.columns[columna]) + " --------> " +str(error_cuadratico_medio))
+    print(str(data_global.columns[columna]) + " --------> " +str(r2))
 
     #Ahora calculamos el error cuadratico medio que sale al examinar
     #las predicciones de y con los valores reales que ha tomado y
