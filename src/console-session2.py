@@ -68,6 +68,19 @@ plt.show()
 
 #%%
 
+#lista = ['season','yr','mnth','hr','holiday','weekday','workingday','weathersit','temp','atemp','hum','windspeed','casual','registered']
+#for i in range(14):  
+ #   plt.show()
+  #  fg = plt.figure(1, figsize=(9,6))
+   # ac = fg.add_subplot(111)
+    #bp = ac.boxplot(dataset_array[i])
+for i in range(14):    
+    plt.show()
+    plt.figure(1, figsize=(9,6))
+    sb.boxplot(dataset_array[i])
+
+#%%
+
 #Se calcula una matriz de correlación de todas las columnas con todas las columnas
 correlacio = dataset_frame.corr()
 plt.figure(figsize=(23, 23)) # Hago la figura más grande para que se displaye
