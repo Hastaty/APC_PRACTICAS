@@ -66,7 +66,9 @@ print('descripcion datos')
 display(better_frame.describe())
 
 #Se muestra un histograma con los datos, pero eliminando dos cosas
-better_frame.drop(['instant','cnt'],1).hist()
+#better_frame.drop(['instant','cnt'],1).hist()
+
+
 plt.show()
 
 #%%
@@ -78,6 +80,7 @@ plt.figure(figsize=(23, 23)) # Hago la figura más grande para que se displaye
 ax = sb.heatmap(correlacio, annot=True, linewidths=.5)
 
 #%%
+
 #Funcion axuliar para estandarizar valores
 def standarize(M):
     mean = M.mean(axis=0)
@@ -87,6 +90,22 @@ def standarize(M):
     return M
 
 dataset_array = standarize(dataset_array)
+
+
+#%%
+
+#lista = ['season','yr','mnth','hr','holiday','weekday','workingday','weathersit','temp','atemp','hum','windspeed','casual','registered']
+#for i in range(14):  
+ #   plt.show()
+  #  fg = plt.figure(1, figsize=(9,6))
+   # ac = fg.add_subplot(111)
+    #bp = ac.boxplot(dataset_array[i])
+for i in range(14):    
+    plt.show()
+    plt.figure(1, figsize=(9,6))
+    sb.boxplot(dataset_array[i])
+
+
 
 #%%
 #Construyes un objeto que puede calcular la regresión
@@ -115,6 +134,8 @@ for i in range(14):
 
         
         n = 60
+        
+        
         x = dataset_array[:, i].reshape(-1, 1)
         y = dataset_array[:, 15]
         x_train = x[:-n, :]
