@@ -17,8 +17,8 @@ from matplotlib import cm
 # Mas imports
 from sklearn import linear_model as model
 from sklearn import metrics 
+import sklearn.preprocessing as prepro
 from IPython.display import display
-from sklearn.metrics import r2_score
 
 
 
@@ -64,9 +64,6 @@ better_frame['windspeed'] = better_frame['windspeed'] * 67.0
 #descripcion datos
 print('descripcion datos')
 display(better_frame.describe())
-
-#Se muestra un histograma con los datos, pero eliminando dos cosas
-better_frame.drop(['instant','cnt'],1).hist()
 plt.show()
 
 #%%
@@ -75,57 +72,29 @@ plt.show()
 correlacio = dataset_frame.corr()
 plt.figure(figsize=(23, 23)) # Hago la figura más grande para que se displaye
                              # correctamente
-ax = sb.heatmap(correlacio, annot=True, linewidths=.5)
-
+display(ax = sb.heatmap(correlacio, annot=True, linewidths=.5))
+plt.show()
 #%%
-#Funcion axuliar para estandarizar valores
-def standarize(M):
-    mean = M.mean(axis=0)
-    std = M.std(axis=0)
-    M = M - mean[None, :]
-    M = M / std[None, :]
-    return M
+# Como no podemos binarizar sacamos los 
+# siguientes atributos. 
+# Fechas y el instante
+dataset_frame=dataset_frame.\
+                drop('instant', 1).\
+                drop('dteday', 1).\
+                drop('yr', 1).\
+                drop('mnth', 1).\
+                drop('hr', 1)
+for i, e in enumerate(dataset_frame):
+    print(str(i) + ':' + ' ' + str(e))
+    
+# Binarizamos atributos categoricos
+# 4 - 1 - 7 - 1 - 4 - (1 -)* 
+array1 = dataset_frame.values
+dataset_array=np.empty((24, dataset_frame.shape[0]), dtype=np.float64)
 
-dataset_array = standarize(dataset_array)
+one_hot_encoder = prepro.OneHotEncoder(sparse=False, categories='auto')
+dataset_array[:, 0:3] = one_hot_encoder.fit_transform(array1[:, 0]).reshape(-1, 1)
 
-#%%
-#Construyes un objeto que puede calcular la regresión
-regression = model.LinearRegression()
-
-
-#Esta función "trocea" los datos
-def split_data(x, y, train_ratio): 
-    indices = np.arange(x.shape[0]) 
-    np.random.shuffle(indices) 
-    n_train = int(np.floor(x.shape[0]*train_ratio)) 
-    indices_train = indices[:n_train] 
-    indices_val = indices[n_train:] 
-    x_train = x[indices_train, :] 
-    y_train = y[indices_train] 
-    x_val = x[indices_val, :] 
-    y_val = y[indices_val] 
-    return x_train, y_train, x_val, y_val
-
-
-#Recorremos todas las columnas
-for i in range(14):
-        #Creamos un objeto que pueda manejar la regresión
-        regression = model.LinearRegression()
-        # .reshape(-1, 1) transpose
-
-        
-        n = 60
-        x = dataset_array[:, i].reshape(-1, 1)
-        y = dataset_array[:, 15]
-        x_train = x[:-n, :]
-        x_test =  x[-n:, :]
-        y_train = y[:-n]
-        y_test = y[-n:]
-        regression.fit(x_train, y_train)
-        y_predicted = regression.predict(x_test)
-        plt.figure()
-        ax = plt.scatter(x_test, y_test)
-        plt.plot(x_test, y_predicted, '-ro', linewidth=3)  
-        
-      
+dataset_array[:, 4] = dataset_frame['holiday'].values.reshape(-1, 1)
+dataset_array[:, 5] = dataset_frame
 
