@@ -212,28 +212,34 @@ print('r2 :' + ' '+ str(r2))
 
 # los m y b parametros son iniciados de forma aleatoria
 # por que vamos a minimizar ese error con el descenso del gradienteprint(data[:,:columnas])
+'''
+x_b = []
+x_b = np.array(x_b)
+x_b = np.transpose(x)
+x_b = x_b[0] '''
 
-
-x = np.transpose(x)
-x = x[0]
-
+x_b = dataset_array[:,13]
 m = 0
 b = 0
-
-L = 0.01 # tasa de aprendizaje
-iteraciones = 1000 # numero de iteraciones a su gusto (numero de pasos en nuestra analogía)
+print(x_b)
+L = 0.1 # tasa de aprendizaje
+iteraciones = 200 # numero de iteraciones a su gusto (numero de pasos en nuestra analogía)
 coste = []
-mejor = False
 
-n = float(len(x))
+
+n = float(len(x_b))
 i = 0
 print('Esto es n')
 print(n)
+print(x_b)
+print(y)
+
+#esto es para una sola variable
 for i in range(iteraciones):
-    y_pred = m * x + b # nuestro modelo
-    z = y_pred - y
+    y_pred = m * x_b + b # nuestro modelo
+    z =  y_pred - y
     D_b = (1/n) * sum(z)  # Derivada parcial con respecto a b 
-    z = x* z
+    z = x_b* z
     D_m = (1/n) * sum(z)  # Derivada parcial con respecto m 
 
     # actualizamos los nuevos valores 
@@ -242,11 +248,10 @@ for i in range(iteraciones):
     b = b - L * D_b  #theta[0]
     
     #funcion de coste   
-    z = (m * x + b) - y 
+    z = (m * x_b + b) - y 
     z = z**2
     coste.append((sum(z))/(2*n))
-    if(coste[i] < 10**(-3)):
-        mejor = True
+    if(coste[i] < 0.0275):
         break;
 
 #muestro grafica de como cotes varian
@@ -259,7 +264,7 @@ print(m,b)
 print('coste mse')
 print(coste[i])
 print(i)
-plt.scatter(x, y)
+plt.scatter(x_b, y)
 axes = plt.gca()
 x_vals = np.array(axes.get_xlim())
 y_vals = b + m * x_vals
@@ -267,4 +272,80 @@ plt.plot(x_vals, y_vals, color="red")
 plt.show()
 print(coste[len(coste)-1])
 
-#vale por fin ha salido
+#%%
+#con todas las variables
+
+def modelo(m,x,n, b):
+    print('calculo')
+    print(x[:,0])
+    y_pred = m[0]*x[:,0]
+    print(y_pred)
+    for i in range(1,14):
+        y_pred = y_pred + ( x[:,i] * m[i])
+    y_pred = y_pred + b
+    print(y_pred)
+    print(y_pred[0])
+    print(x[:,i])
+    return y_pred
+
+def calculo_thetas(x,y_pred,y,n,L,m,b):
+    z = y_pred - y
+    D_b = (1/n)* sum(z)
+    D_b = D_b*L
+    D_m = np.zeros(14)
+    for i in range(0,14):
+        aux = x[:,i] * z
+        D_m[i] = (1/n) * sum(aux)
+        
+    b = b - D_b *L
+    m = m - D_m*L
+         
+    return b, m
+
+def coste(y_pred,y,n):
+    aux = y_pred - y
+    aux = aux ** 2
+    coste = sum(aux)/(2*n)
+    return coste
+            
+L = 0.1 # tasa de aprendizaje
+iteraciones = 100 # numero de iteraciones a su gusto (numero de pasos en nuestra analogía)
+coste = []
+
+
+print(dataset_array)
+print(len(dataset_array))
+
+
+
+
+print(x_b)
+print(len(x_b))
+x_mb = dataset_array
+n = float(len(x_mb[:, 0]))
+i = 0
+m = np.zeros(14)
+b = 0
+print('Esto es n')
+print(len(x_mb))
+print(n)
+ 
+
+
+#esto es para una sola variable
+for i in range(iteraciones):
+    y_pred = modelo(m,x_mb,n, b)
+    print(y_pred)
+    #coste = coste(y_pred,y,n)
+    
+    aux = y_pred - y
+    aux = aux ** 2
+    coste = sum(aux)/(2*n)
+    
+    if(coste < 0.0275):
+        break;
+    b , m = calculo_thetas(x_mb,y_pred,y,n,L,m,b)
+    
+print (m,b)
+print(i)
+print(coste)    
