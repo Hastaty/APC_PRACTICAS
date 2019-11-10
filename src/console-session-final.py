@@ -68,7 +68,7 @@ plt.show()
 
 #%% 
 #Se muestra un histograma con los datos, pero eliminando dos cosas
-dataframe.drop(['instant','cnt'],1).hist()
+dataset_frame.drop(['instant','cnt'],1).hist()
 #%%
 #lista = ['season','yr','mnth','hr','holiday','weekday','workingday','weathersit','temp','atemp','hum','windspeed','casual','registered']
 #for i in range(14):  
@@ -207,3 +207,64 @@ print('mse:' + ' ' + str(mse))
 r2 = metrics.r2_score(y_test, y_predicted)
 print('r2 :' + ' '+ str(r2))
 # lo mejor es un solo atributo 
+
+#%%
+
+# los m y b parametros son iniciados de forma aleatoria
+# por que vamos a minimizar ese error con el descenso del gradienteprint(data[:,:columnas])
+
+
+x = np.transpose(x)
+x = x[0]
+
+m = 0
+b = 0
+
+L = 0.01 # tasa de aprendizaje
+iteraciones = 1000 # numero de iteraciones a su gusto (numero de pasos en nuestra analogía)
+coste = []
+mejor = False
+
+n = float(len(x))
+i = 0
+print('Esto es n')
+print(n)
+for i in range(iteraciones):
+    y_pred = m * x + b # nuestro modelo
+    z = y_pred - y
+    D_b = (1/n) * sum(z)  # Derivada parcial con respecto a b 
+    z = x* z
+    D_m = (1/n) * sum(z)  # Derivada parcial con respecto m 
+
+    # actualizamos los nuevos valores 
+    # (damos un paso en la zona baja para reducir el error)
+    m = m - L * D_m  #theta[1]
+    b = b - L * D_b  #theta[0]
+    
+    #funcion de coste   
+    z = (m * x + b) - y 
+    z = z**2
+    coste.append((sum(z))/(2*n))
+    if(coste[i] < 10**(-3)):
+        mejor = True
+        break;
+
+#muestro grafica de como cotes varian
+plt.plot(range(i+1), coste,'-r', linewidth=3)
+plt.show()
+
+#muestro grafica de la regresion lineañ
+print('m y b')    
+print(m,b) 
+print('coste mse')
+print(coste[i])
+print(i)
+plt.scatter(x, y)
+axes = plt.gca()
+x_vals = np.array(axes.get_xlim())
+y_vals = b + m * x_vals
+plt.plot(x_vals, y_vals, color="red")
+plt.show()
+print(coste[len(coste)-1])
+
+#vale por fin ha salido
