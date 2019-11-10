@@ -354,7 +354,8 @@ axes = plt.gca()
 y_pred = modelo(m,x_test,num,b)
 #x_vals = np.array(axes.get_xlim())
 #y_vals = b + m[13] * x_vals
-plt.plot(x_vals, y_vals, color="red")
+y_pred = x_test[:,13]*m[13] + b
+plt.plot(x_test[:,13], y_pred, color="red")
 plt.show()
 
 
@@ -364,25 +365,12 @@ plt.show()
 x_val = np.random.random((100, 2)) 
 y_val = np.random.random((100, 1)) 
 #regr = regression(x_val, y_val) 
-predX3D = modelo(m,x_test,num,b)
-# Afegim els 1's 
-A = np.hstack((x_test,np.ones([x_test.shape[0],1]))) 
-w = np.linalg.lstsq(A,predX3D)[0]
-#Dibuixem
-#1r creem una malla acoplada a la zona de punts per tal de representar el pla 
-malla = (range(20) + 0 * np.ones(20)) / 10 
-malla_x1 = malla * (max(x_test[:,12]) - min(x_test[:,12]))/2 + min(x_test[:,12]) 
-malla_x2 = malla * (max(x_test[:,13]) - min(x_test[:,13]))/2 + min(x_test[:,13])
-#la fucnio meshgrid ens aparella un de malla_x1 amb un de malla_x2, per atot #element de mallax_1 i per a tot element de malla_x2. 
-xplot, yplot = np.meshgrid(malla_x1 ,malla_x2)
-# Cal desnormalitzar les dades 
-def desnormalitzar(x, mean, std): 
-    return x * std + mean
-#ara creem la superficies que es un pla 
-zplot = w[0] * xplot + w[1] * yplot + w[2]
-#Dibuixem punts i superficie 
-#plt3d = plt.figure('Coeficiente prismatico -- Relacio longitud desplacament 3D', dpi=100.0)
-plt3d =plt.axes(projection='3d')
-plt3d.plot_surface(xplot,yplot,zplot, color='red') 
-plt3d.scatter(x_val[:,0],x_val[:,1],y_val)
+#predX3D = modelo(m,x_test,num,b)
 
+predX3D = x_test[:,13]*m[13] + x_test[:,12]*m[12] + b
+plt3d =plt.axes(projection='3d')
+#plt3d.plot_surface(xplot,yplot,zplot, color='red') 
+plt3d.scatter(x_test[:,12],x_test[:,13],y_test)
+plt3d.plot3D(x_test[:,12],x_test[:,13],predX3D, color='red')
+
+print(y_predicted)
