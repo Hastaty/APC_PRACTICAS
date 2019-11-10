@@ -18,8 +18,9 @@ from matplotlib import cm
 from sklearn import linear_model as model
 from sklearn import metrics 
 import sklearn.preprocessing as prepro
-from IPython.display import display
 from mpl_toolkits.mplot3d import axes3d, Axes3D 
+import sklearn.decomposition as decom
+from IPython.display import display
 
 
 
@@ -37,6 +38,7 @@ for i, e in enumerate(dataset_frame):
     
 #veamos esas filas
 display(dataset_frame.head())
+display(dataset_frame.tail())
 
 #Borras una fila
 dataset_array = dataset_frame.drop(['instant','dteday'], 1).values
@@ -67,21 +69,20 @@ print('descripcion datos')
 display(better_frame.describe())
 plt.show()
 
+#%%
+#### Gráficos antes de regressión
 #%% 
 #Se muestra un histograma con los datos, pero eliminando dos cosas
-dataset_frame.drop(['instant','cnt'],1).hist()
-#%%
-#lista = ['season','yr','mnth','hr','holiday','weekday','workingday','weathersit','temp','atemp','hum','windspeed','casual','registered']
-#for i in range(14):  
- #   plt.show()
-  #  fg = plt.figure(1, figsize=(9,6))
-   # ac = fg.add_subplot(111)
-    #bp = ac.boxplot(dataset_array[i])
-for i in range(14):    
+for i in range(14):
+    sns.distplot(dataset_array[i])
     plt.show()
-    plt.figure(1, figsize=(9,6))
-    sns.boxplot(dataset_array[i])
 
+#lista = ['season','yr','mnth','hr',\
+# 'holiday','weekday','workingday','weathersit',\
+#'temp','atemp','hum','windspeed','casual','registered']
+for i in range(14):
+    sns.boxplot(dataset_array[i], orient='v')
+    plt.show()
 #%%
 
 #Se calcula una matriz de correlación de todas las columnas con todas las columnas
@@ -206,8 +207,80 @@ plt.show()
 mse = metrics.mean_squared_error(y_test, y_predicted)
 print('mse:' + ' ' + str(mse))
 r2 = metrics.r2_score(y_test, y_predicted)
+print('r2 :' + ' '+ str(r2)) 
+
+#%%
+our_regressor = model.LinearRegression()
+
+n = int(dataset_array.shape[0] * 0.20)
+x = dataset_array[:, [12, 13]].reshape(-1, 2)
+y = dataset_array[:, 14]
+x_train = x[:-n, :]
+x_test =  x[-n:, :]
+y_train = y[:-n]
+y_test = y[-n:]
+our_regressor.fit(x_train, y_train)
+y_predicted = our_regressor.predict(x_test)
+pca = decom.PCA(n_components=1)
+x_test_reduced = pca.fit_transform(x_test)
+plt.figure()
+ax = plt.scatter(x_test_reduced, y_test)
+plt.plot(x_test_reduced, y_predicted, '-r', linewidth=1) 
+plt.show()
+mse = metrics.mean_squared_error(y_test, y_predicted)
+print('mse:' + ' ' + str(mse))
+r2 = metrics.r2_score(y_test, y_predicted)
 print('r2 :' + ' '+ str(r2))
-# lo mejor es un solo atributo 
+
+#%%
+our_regressor = model.LinearRegression()
+
+n = int(dataset_array.shape[0] * 0.20)
+x = dataset_array[:, [12,13]].reshape(-1, 2)
+y = dataset_array[:, 14]
+x_train = x[:-n, :]
+x_test =  x[-n:, :]
+y_train = y[:-n]
+y_test = y[-n:]
+our_regressor.fit(x_train, y_train)
+y_predicted = our_regressor.predict(x_test)
+mse = metrics.mean_squared_error(y_test, y_predicted)
+print('mse:' + ' ' + str(mse))
+r2 = metrics.r2_score(y_test, y_predicted)
+print('r2 :' + ' '+ str(r2))
+#%%
+our_regressor = model.LinearRegression()
+
+n = int(dataset_array.shape[0] * 0.20)
+x = dataset_array[:, :14].reshape(-1, 14)
+y = dataset_array[:, 14]
+x_train = x[:-n, :]
+x_test =  x[-n:, :]
+y_train = y[:-n]
+y_test = y[-n:]
+our_regressor.fit(x_train, y_train)
+y_predicted = our_regressor.predict(x_test)
+mse = metrics.mean_squared_error(y_test, y_predicted)
+print('mse:' + ' ' + str(mse))
+r2 = metrics.r2_score(y_test, y_predicted)
+print('r2 :' + ' '+ str(r2))
+
+#%%
+our_regressor = model.LinearRegression()
+
+n = int(dataset_array.shape[0] * 0.20)
+x = dataset_array[:, :12].reshape(-1, 12)
+y = dataset_array[:, 14]
+x_train = x[:-n, :]
+x_test =  x[-n:, :]
+y_train = y[:-n]
+y_test = y[-n:]
+our_regressor.fit(x_train, y_train)
+y_predicted = our_regressor.predict(x_test)
+mse = metrics.mean_squared_error(y_test, y_predicted)
+print('mse:' + ' ' + str(mse))
+r2 = metrics.r2_score(y_test, y_predicted)
+print('r2 :' + ' '+ str(r2))
 
 #%%
 
@@ -397,10 +470,6 @@ zplot = w[0] * xplot + w[1] * yplot + w[2]
 plt3d =plt.axes(projection='3d')
 plt3d.plot_surface(xplot,yplot,zplot, color='red') 
 plt3d.scatter(x_test[:,12],x_test[:,13],y_test)
-
-
-
-
 
 #plt3d.scatter(x_test[:,12],x_test[:,13],y_test)
 #plt3d.plot3D(x_test[:,12],x_test[:,13],predX3D, color='red')
