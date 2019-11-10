@@ -19,6 +19,7 @@ from sklearn import linear_model as model
 from sklearn import metrics 
 import sklearn.preprocessing as prepro
 from IPython.display import display
+from mpl_toolkits.mplot3d import axes3d, Axes3D 
 
 
 
@@ -227,12 +228,8 @@ iteraciones = 200 # numero de iteraciones a su gusto (numero de pasos en nuestra
 coste = []
 
 
-n = float(len(x_b))
+num = float(len(x_b))
 i = 0
-print('Esto es n')
-print(n)
-print(x_b)
-print(y)
 
 #esto es para una sola variable
 for i in range(iteraciones):
@@ -250,7 +247,7 @@ for i in range(iteraciones):
     #funcion de coste   
     z = (m * x_b + b) - y 
     z = z**2
-    coste.append((sum(z))/(2*n))
+    coste.append((sum(z))/(2*num))
     if(coste[i] < 0.0275):
         break;
 
@@ -276,16 +273,10 @@ print(coste[len(coste)-1])
 #con todas las variables
 
 def modelo(m,x,n, b):
-    print('calculo')
-    print(x[:,0])
     y_pred = m[0]*x[:,0]
-    print(y_pred)
     for i in range(1,14):
         y_pred = y_pred + ( x[:,i] * m[i])
     y_pred = y_pred + b
-    print(y_pred)
-    print(y_pred[0])
-    print(x[:,i])
     return y_pred
 
 def calculo_thetas(x,y_pred,y,n,L,m,b):
@@ -293,7 +284,7 @@ def calculo_thetas(x,y_pred,y,n,L,m,b):
     D_b = (1/n)* sum(z)
     D_b = D_b*L
     D_m = np.zeros(14)
-    for i in range(0,14):
+    for i in range(14):
         aux = x[:,i] * z
         D_m[i] = (1/n) * sum(aux)
         
@@ -302,6 +293,7 @@ def calculo_thetas(x,y_pred,y,n,L,m,b):
          
     return b, m
 
+#no se porque me da error
 def coste(y_pred,y,n):
     aux = y_pred - y
     aux = aux ** 2
@@ -309,7 +301,7 @@ def coste(y_pred,y,n):
     return coste
             
 L = 0.1 # tasa de aprendizaje
-iteraciones = 100 # numero de iteraciones a su gusto (numero de pasos en nuestra analogía)
+iteraciones = 400 # numero de iteraciones a su gusto (numero de pasos en nuestra analogía)
 coste = []
 
 
@@ -321,8 +313,9 @@ print(len(dataset_array))
 
 print(x_b)
 print(len(x_b))
-x_mb = dataset_array
-n = float(len(x_mb[:, 0]))
+x_mb = dataset_array[:-n,:]
+x_test = dataset_array[-n:,:]
+#n = float(len(x_mb[:, 0]))
 i = 0
 m = np.zeros(14)
 b = 0
@@ -332,20 +325,64 @@ print(n)
  
 
 
-#esto es para una sola variable
+
 for i in range(iteraciones):
-    y_pred = modelo(m,x_mb,n, b)
-    print(y_pred)
+    y_pred = modelo(m,x_mb,num, b)
     #coste = coste(y_pred,y,n)
     
-    aux = y_pred - y
+    aux = y_pred - y_train
     aux = aux ** 2
-    coste = sum(aux)/(2*n)
+    coste.append(sum(aux)/(2*num))
     
-    if(coste < 0.0275):
+    if(coste[i] < 0.0001):
         break;
-    b , m = calculo_thetas(x_mb,y_pred,y,n,L,m,b)
+    b , m = calculo_thetas(x_mb,y_pred,y_train,num,L,m,b)
     
 print (m,b)
-print(i)
-print(coste)    
+print('i,coste')
+
+print(coste[i])
+print(num)
+
+plt.plot(range(i+1), coste,'-r', linewidth=3)
+plt.show()
+
+#una variable, la mejor
+
+plt.scatter(x_test[:,13], y_test)
+axes = plt.gca()
+y_pred = modelo(m,x_test,num,b)
+#x_vals = np.array(axes.get_xlim())
+#y_vals = b + m[13] * x_vals
+plt.plot(x_vals, y_vals, color="red")
+plt.show()
+
+
+#%%
+
+# generem dades 3D d'exemple 
+x_val = np.random.random((100, 2)) 
+y_val = np.random.random((100, 1)) 
+#regr = regression(x_val, y_val) 
+predX3D = modelo(m,x_test,num,b)
+# Afegim els 1's 
+A = np.hstack((x_test,np.ones([x_test.shape[0],1]))) 
+w = np.linalg.lstsq(A,predX3D)[0]
+#Dibuixem
+#1r creem una malla acoplada a la zona de punts per tal de representar el pla 
+malla = (range(20) + 0 * np.ones(20)) / 10 
+malla_x1 = malla * (max(x_test[:,12]) - min(x_test[:,12]))/2 + min(x_test[:,12]) 
+malla_x2 = malla * (max(x_test[:,13]) - min(x_test[:,13]))/2 + min(x_test[:,13])
+#la fucnio meshgrid ens aparella un de malla_x1 amb un de malla_x2, per atot #element de mallax_1 i per a tot element de malla_x2. 
+xplot, yplot = np.meshgrid(malla_x1 ,malla_x2)
+# Cal desnormalitzar les dades 
+def desnormalitzar(x, mean, std): 
+    return x * std + mean
+#ara creem la superficies que es un pla 
+zplot = w[0] * xplot + w[1] * yplot + w[2]
+#Dibuixem punts i superficie 
+#plt3d = plt.figure('Coeficiente prismatico -- Relacio longitud desplacament 3D', dpi=100.0)
+plt3d =plt.axes(projection='3d')
+plt3d.plot_surface(xplot,yplot,zplot, color='red') 
+plt3d.scatter(x_val[:,0],x_val[:,1],y_val)
+
