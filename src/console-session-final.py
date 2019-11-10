@@ -220,6 +220,8 @@ x_b = np.transpose(x)
 x_b = x_b[0] '''
 
 x_b = dataset_array[:,13]
+x_b = dataset_array[:-n,13]
+x_test = dataset_array[-n:,13]
 m = 0
 b = 0
 print(x_b)
@@ -234,10 +236,10 @@ i = 0
 #esto es para una sola variable
 for i in range(iteraciones):
     y_pred = m * x_b + b # nuestro modelo
-    z =  y_pred - y
-    D_b = (1/n) * sum(z)  # Derivada parcial con respecto a b 
+    z =  y_pred - y_train
+    D_b = (1/num) * sum(z)  # Derivada parcial con respecto a b 
     z = x_b* z
-    D_m = (1/n) * sum(z)  # Derivada parcial con respecto m 
+    D_m = (1/num) * sum(z)  # Derivada parcial con respecto m 
 
     # actualizamos los nuevos valores 
     # (damos un paso en la zona baja para reducir el error)
@@ -245,11 +247,13 @@ for i in range(iteraciones):
     b = b - L * D_b  #theta[0]
     
     #funcion de coste   
-    z = (m * x_b + b) - y 
+    z = (m * x_b + b) - y_train 
     z = z**2
     coste.append((sum(z))/(2*num))
-    if(coste[i] < 0.0275):
-        break;
+    if(i>0):
+        if((abs(coste[i] - coste[i-1])) < 0.001):
+            print(coste[i] - coste[i-1])
+            break;
 
 #muestro grafica de como cotes varian
 plt.plot(range(i+1), coste,'-r', linewidth=3)
@@ -259,13 +263,14 @@ plt.show()
 print('m y b')    
 print(m,b) 
 print('coste mse')
-print(coste[i])
 print(i)
-plt.scatter(x_b, y)
+print(coste[i])
+print(coste)
+plt.scatter(x_test, y_test)
 axes = plt.gca()
-x_vals = np.array(axes.get_xlim())
-y_vals = b + m * x_vals
-plt.plot(x_vals, y_vals, color="red")
+#x_vals = np.array(axes.get_xlim())
+y_pred = b + m * x_test
+plt.plot(x_test, y_pred, color="red")
 plt.show()
 print(coste[len(coste)-1])
 
@@ -333,9 +338,9 @@ for i in range(iteraciones):
     aux = y_pred - y_train
     aux = aux ** 2
     coste.append(sum(aux)/(2*num))
-    
-    if(coste[i] < 0.0001):
-        break;
+    if(i > 0):
+        if(abs(coste[i] - coste[i-1]) < 0.000001):
+            break;
     b , m = calculo_thetas(x_mb,y_pred,y_train,num,L,m,b)
     
 print (m,b)
@@ -359,18 +364,45 @@ plt.plot(x_test[:,13], y_pred, color="red")
 plt.show()
 
 
+
 #%%
 
 # generem dades 3D d'exemple 
-x_val = np.random.random((100, 2)) 
-y_val = np.random.random((100, 1)) 
+
 #regr = regression(x_val, y_val) 
 #predX3D = modelo(m,x_test,num,b)
-
+print(x_test[:,12:13])
+print(x_test[:,13])
 predX3D = x_test[:,13]*m[13] + x_test[:,12]*m[12] + b
-plt3d =plt.axes(projection='3d')
+#plt3d =plt.axes(projection='3d')
 #plt3d.plot_surface(xplot,yplot,zplot, color='red') 
+
+# Afegim els 1's 
+A = np.hstack((x_test[:,12:14],np.ones([x_test[:,12:14].shape[0],1]))) 
+w = np.linalg.lstsq(A,predX3D)[0]
+#Dibuixem
+
+#1r creem una malla acoplada a la zona de punts per tal de representar el pla 
+malla = (range(20) + 0 * np.ones(20)) / 10
+malla_x1 = malla * (max(x_test[:,12]) - min(x_test[:,12]))/2 + min(x_test[:,12]) 
+malla_x2 = malla * (max(x_test[:,13]) - min(x_test[:,13]))/2 + min(x_test[:,13])
+#la fucnio meshgrid ens aparella un de malla_x1 amb un de malla_x2, per atot #element de mallax_1 i per a tot element de malla_x2. 
+xplot, yplot = np.meshgrid(malla_x1 ,malla_x2)
+# Cal desnormalitzar les dades 
+def desnormalitzar(x, mean, std): return x * std + mean
+#ara creem la superficies que es un pla 
+zplot = w[0] * xplot + w[1] * yplot + w[2]
+#Dibuixem punts i superficie 
+#plt3d = plt.figure('Coeficiente prismatico -- Relacio longitud desplacament 3D', dpi=100.0) 
+plt3d =plt.axes(projection='3d')
+plt3d.plot_surface(xplot,yplot,zplot, color='red') 
 plt3d.scatter(x_test[:,12],x_test[:,13],y_test)
-plt3d.plot3D(x_test[:,12],x_test[:,13],predX3D, color='red')
+
+
+
+
+
+#plt3d.scatter(x_test[:,12],x_test[:,13],y_test)
+#plt3d.plot3D(x_test[:,12],x_test[:,13],predX3D, color='red')
 
 print(y_predicted)
